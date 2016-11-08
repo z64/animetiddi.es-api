@@ -97,6 +97,10 @@ ERROR = {
   500 => '500 internal tiddy error'
 }
 
+# configure sinatra
+set :bind, '0.0.0.0'
+set :port, 8080
+
 # top-level hello endpoint
 get '/' do
   {
