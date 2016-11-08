@@ -25,6 +25,12 @@ module Database
     foreign_key :tiddy_id, :tiddies, null: false, on_delete: :cascade
   end
 
+  DB.create_table?(:users) do
+    primary_key :id
+    String :ip, unique: true, null: false
+    TrueClass :blocked, default: false
+  end
+
   ##########
   # MODELS #
   ##########
@@ -78,6 +84,18 @@ module Database
       end.to_json
     end
   end
+
+  class User < Sequel::Model
+    alias_method :blocked?, :blocked
+
+    def block!
+      update(blocked: true)
+    end
+
+    def unblock!
+      update(blocked: false)
+    end
+  end
 end
 
 #############
@@ -103,6 +121,11 @@ set :port, 8080
 
 # default endpoint settings
 before do
+  user = Database::User.find(ip: request.ip)
+  user ||= Database::User.create(ip: request.ip)
+
+  halt(401) if user.blocked?
+
   content_type 'application/json'
 end
 
