@@ -97,8 +97,17 @@ ERROR = {
   500 => '500 internal tiddy error'
 }
 
-# random tiddy endpoint
+# top-level hello endpoint
 get '/' do
+  {
+    url: 'http://animetiddi.es/tiddies.jpg',
+    text: 'animetiddi.es',
+    timestamp: Time.now.iso8601
+  }.to_json
+end
+
+# random tiddy endpoint
+get '/random' do
   Database::Tiddy.all.sample.to_json
 end
 
