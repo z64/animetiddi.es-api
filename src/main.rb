@@ -101,6 +101,11 @@ ERROR = {
 set :bind, '0.0.0.0'
 set :port, 8080
 
+# default endpoint settings
+before do
+  content_type 'application/json'
+end
+
 # top-level hello endpoint
 get '/' do
   {
