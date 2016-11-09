@@ -4,17 +4,19 @@ require 'json'
 require 'pry'
 require 'sinatra'
 
-# Sequel extension
-Sequel.extension :migration
+module Database
+  # Sequel extension
+  Sequel.extension :migration
 
-# Connect to DB
-DB = Sequel.connect('sqlite://data/tiddies.db')
+  # Connect to DB
+  DB = Sequel.connect('sqlite://data/tiddies.db')
 
-# Run migrations
-Sequel::Migrator.run(DB, 'src/db/migrations')
+  # Run migrations
+  Sequel::Migrator.run(DB, 'src/db/migrations')
 
-# Set up models
-Dir['src/db/*.rb'].each { |mod| load mod }
+  # Set up models
+  Dir['src/db/*.rb'].each { |mod| load mod }
+end
 
 #############
 # TIDDY API #
