@@ -5,97 +5,17 @@ require 'pry'
 require 'sinatra'
 
 module Database
+  # Sequel extension
+  Sequel.extension :migration
+
   # Connect to DB
   DB = Sequel.connect('sqlite://data/tiddies.db')
 
-  ##########
-  # TABLES #
-  ##########
+  # Run migrations
+  Sequel::Migrator.run(DB, 'src/db/migrations')
 
-  DB.create_table?(:tiddies) do
-    primary_key :id
-    String  :url, null: false, unique: true
-    Integer :size
-    String  :sauce
-  end
-
-  DB.create_table?(:tags) do
-    primary_key :id
-    String :key, null: false
-    foreign_key :tiddy_id, :tiddies, null: false, on_delete: :cascade
-  end
-
-  DB.create_table?(:users) do
-    primary_key :id
-    String :ip, unique: true, null: false
-    TrueClass :blocked, default: false
-  end
-
-  ##########
-  # MODELS #
-  ##########
-
-  class Tiddy < Sequel::Model
-    one_to_many :tags
-
-    def tag_list
-      tags.collect(&:key)
-    end
-
-    def object
-      {
-        id:    id,
-        url:   url,
-        size:  size,
-        sauce: sauce,
-        tags:  tag_list
-      }
-    end
-
-    def to_json
-      object.to_json
-    end
-
-    def self.to_json
-      all.map(&:object).to_json
-    end
-  end
-
-  class Tag < Sequel::Model
-    many_to_one :tiddies
-
-    def object
-      {
-        key: key,
-        count: tiddies.count
-      }
-    end
-
-    def to_json
-      object.to_json
-    end
-
-    def self.to_json
-      all.collect(&:key).uniq.collect do |k|
-        {
-          tag: k,
-          count: where(key: k).count
-        }
-      end.to_json
-    end
-  end
-
-  class User < Sequel::Model
-    alias_method :blocked?, :blocked
-
-    def block!
-      update(blocked: true)
-    end
-
-    def unblock!
-      update(blocked: false)
-    end
-  end
+  # Set up models
+  Dir['src/db/*.rb'].each { |mod| load mod }
 end
 
 #############
